@@ -1,5 +1,16 @@
 import { NativeModules, Platform } from 'react-native';
 
+type TypedArray =
+  | Int8Array
+  | Uint8Array
+  | Uint8ClampedArray
+  | Int16Array
+  | Uint16Array
+  | Int32Array
+  | Uint32Array
+  | BigInt64Array
+  | BigUint64Array;
+
 const LINKING_ERROR =
   `The package 'react-native-random-values-jsi-helper' doesn't seem to be linked. Make sure: \n\n` +
   Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
@@ -25,7 +36,11 @@ if (typeof global.crypto !== 'object') {
   global.crypto = {};
 }
 // @ts-expect-error
-global.crypto.getRandomValues = (array: ArrayBuffer) => {
+global.crypto.getRandomValues = (array: TypedArray) => {
   // @ts-expect-error
-  return global.getRandomValues(array.byteLength);
+  const values = global.getRandomValues(array.byteLength);
+  array.forEach((_, i: number) => {
+    array[i] = values[i];
+  });
+  return values;
 };
